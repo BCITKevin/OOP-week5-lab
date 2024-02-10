@@ -1,3 +1,5 @@
+import passport, { Profile } from "passport";
+
 const database = [
   {
     id: 1,
@@ -21,8 +23,6 @@ const database = [
 
 const userModel = {
 
-  /* FIX ME (types) 😭 */
-
   findOne: (email: string) => {
     const user = database.find((user) => user.email === email);
     if (user) {
@@ -30,7 +30,7 @@ const userModel = {
     }
     throw new Error(`Couldn't find user with email: ${email}`);
   },
-  /* FIX ME (types) 😭 */
+
   findById: (id: number) => {
     const user = database.find((user) => user.id === id);
     if (user) {
@@ -38,6 +38,21 @@ const userModel = {
     }
     throw new Error(`Couldn't find user with id: ${id}`);
   },
-};
 
+  findOrCreate: (profile: any): Express.User => {
+    const user = database.find((user) => user.id === profile.id);
+    if (!user) {
+      const newUser = {
+        id: profile.id,
+        name: profile.username,
+        email: profile.email,
+        password: profile.password,
+      };
+      database.push(newUser);
+      return newUser;
+    }
+    return user;
+  },
+
+}
 export { database, userModel };

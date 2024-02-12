@@ -5,6 +5,7 @@ import { getUserByEmailIdAndPassword } from "../controllers/userController";
 import { userModel } from "../models/userModel";
 import { Session } from "inspector";
 import passportGitHubStrategy from "../middleware/passportStrategies/githubStrategy";
+import { readdirSync } from "fs";
 
 const router = express.Router();
 

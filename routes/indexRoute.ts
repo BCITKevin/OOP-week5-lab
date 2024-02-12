@@ -1,15 +1,58 @@
 import express from "express";
+import sessions, { SessionData } from "express-session";
+import store from "express-session";
 const router = express.Router();
-import { ensureAuthenticated } from "../middleware/checkAuth";
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+import { ensureAuthenticated, ensureAdminAuthenticated } from "../middleware/checkAuth";
+import { database, userModel } from "../models/userModel";
+import { allowedNodeEnvironmentFlags } from "process";
+import { session } from "passport";
 
 router.get("/", (req, res) => {
   res.send("welcome");
 });
 
+
 router.get("/dashboard", ensureAuthenticated, (req, res) => {
-  res.render("dashboard", {
-    user: req.user,
-  });
+  const userInfo = req.user;
+  const userRole = req.user?.role;
+  if (req.sessionStore.all === undefined) throw new Error("error appears.");
+  req.sessionStore.all((err, sessions) => {
+    if(err) {
+      console.log(err);
+    }
+    if (sessions != null) {
+      const sessionKeys = Object.keys(sessions);
+      console.log('all the sessions are: ', sessionKeys);
+      if (userRole !== "admin") {
+        res.render("dashboard", {
+          userInfo: userInfo
+        });
+      } else {
+        res.render("admin", { userInfo: userInfo, sessions: sessionKeys });
+      }
+    }
+  })
 });
+
+router.get('/dashboard/revoke', (req, res) => {
+  if (req.sessionStore.all === undefined) throw new Error("error appears.");
+  req.sessionStore.all((err, sessions) => {
+    if(err) {
+      console.log(err);
+    }
+    if (sessions != null) {
+      const sessionKeys = Object.keys(sessions);
+      sessionKeys.forEach(sessionKey => {
+        req.sessionStore.destroy(sessionKey, (err) => {
+          if(err) throw err;
+        })
+      }
+      )}
+      res.redirect('/auth/login')
+  })
+})
+
 
 export default router;

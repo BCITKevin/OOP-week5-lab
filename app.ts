@@ -1,6 +1,6 @@
 import express from "express";
 import expressLayouts from "express-ejs-layouts";
-import session from "express-session";
+import session, { Cookie, MemoryStore } from "express-session";
 import path from "path";
 import passportMiddleware from './middleware/passportMiddleware';
 import dotenv from 'dotenv';
@@ -18,9 +18,11 @@ declare global {
       name: string;
       email: string;
       password: string;
+      role: string;
     }
   }
 }
+
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(

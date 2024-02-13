@@ -18,7 +18,7 @@ if (clientID === undefined) {
 } else if (clientSecret === undefined) {   
     throw new Error("The client secret is undefined");
 }
-
+console.log("hello")
 console.log(process.env);
 
 const githubStrategy: GitHubStrategy = new GitHubStrategy (

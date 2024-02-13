@@ -17,41 +17,44 @@ router.get("/", (req, res) => {
 router.get("/dashboard", ensureAuthenticated, (req, res) => {
   const userInfo = req.user;
   const userRole = req.user?.role;
+  const session: any = [];
   if (req.sessionStore.all === undefined) throw new Error("error appears.");
-  req.sessionStore.all((err, sessions) => {
+  req.sessionStore.all((err, sessions: any) => {
     if(err) {
       console.log(err);
     }
     if (sessions != null) {
       const sessionKeys = Object.keys(sessions);
+      sessionKeys.forEach((sessionId) => {
+        const sessionData = sessions[sessionId];
+        const userData = {
+          sessionId: sessionId,
+          userId: sessionData["passport"].user,
+        }
+        session.push(userData);
+      })
+      console.log("마지막 세션: ",session);
       console.log('all the sessions are: ', sessionKeys);
       if (userRole !== "admin") {
         res.render("dashboard", {
-          userInfo: userInfo
+          userInfo: userInfo,
         });
       } else {
-        res.render("admin", { userInfo: userInfo, sessions: sessionKeys });
+        res.render("admin", { userInfo: userInfo, userData: session });
       }
     }
   })
 });
 
-router.get('/dashboard/revoke', (req, res) => {
-  if (req.sessionStore.all === undefined) throw new Error("error appears.");
-  req.sessionStore.all((err, sessions) => {
-    if(err) {
-      console.log(err);
-    }
-    if (sessions != null) {
-      const sessionKeys = Object.keys(sessions);
-      sessionKeys.forEach(sessionKey => {
-        req.sessionStore.destroy(sessionKey, (err) => {
-          if(err) throw err;
-        })
-      }
-      )}
-      res.redirect('/auth/login')
+router.get('/dashboard/revoke/:sessionId', (req, res) => {
+  const sessionId = req.params.sessionId; //qa3GmjRv5oSEKRhGwexdE3JnuNRoJvhz
+  console.log("-------------------")
+  console.log(sessionId);
+  console.log("-------------------")
+  req.sessionStore.destroy(sessionId, (err) => {
+    if(err) throw (err);
   })
+    res.redirect('/auth/login')
 })
 
 
